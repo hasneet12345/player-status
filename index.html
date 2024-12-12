@@ -1,73 +1,74 @@
-<html>
-  <head>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-      google.charts.load("current", {
-        packages: ["corechart", "table"]
-      });
-
-      google.charts.setOnLoadCallback(drawBars);
-
-      function drawBars() {
-        var queryString = encodeURIComponent('SELECT A, B, C, D, E'); // Team Name, Player 1, Player 2, Player 3, Player 4
-        var dataSourceUrl = 'https://docs.google.com/spreadsheets/d/1QBoxHBAQ8pgaKhAWEf_viSBvqd2Spq9GzG8SU3VW8fU/gviz/tq?tq=' + queryString;
-        var query = new google.visualization.Query(dataSourceUrl);
-        query.send(handleQueryResponse);
-      }
-
-      function handleQueryResponse(response) {
-        var data = response.getDataTable();
-        var teamName = data.getValue(0, 0); // Team Name
-        var status1 = data.getValue(0, 1); // Player 1 Status
-        var status2 = data.getValue(0, 2); // Player 2 Status
-        var status3 = data.getValue(0, 3); // Player 3 Status
-        var status4 = data.getValue(0, 4); // Player 4 Status
-
-        updateBars(status1, status2, status3, status4);
-        document.getElementById("teamName").innerHTML = teamName;
-      }
-
-      function updateBars(status1, status2, status3, status4) {
-        document.getElementById("bar1").style.width = (status1 === "Alive" ? "100%" : "0%");
-        document.getElementById("bar1").style.backgroundColor = (status1 === "Alive" ? "green" : "red");
-
-        document.getElementById("bar2").style.width = (status2 === "Alive" ? "100%" : "0%");
-        document.getElementById("bar2").style.backgroundColor = (status2 === "Alive" ? "green" : "red");
-
-        document.getElementById("bar3").style.width = (status3 === "Alive" ? "100%" : "0%");
-        document.getElementById("bar3").style.backgroundColor = (status3 === "Alive" ? "green" : "red");
-
-        document.getElementById("bar4").style.width = (status4 === "Alive" ? "100%" : "0%");
-        document.getElementById("bar4").style.backgroundColor = (status4 === "Alive" ? "green" : "red");
-      }
-    </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Alive Status</title>
     <style>
-      .team-status {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-      .bars-container {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-      }
-      .bar {
-        width: 24%;
-        height: 30px;
-        margin: 0 2%;
-        border-radius: 5px;
-        background-color: #ccc;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #121212;
+            color: white;
+        }
+        .team-container {
+            margin: 20px;
+        }
+        .team-name {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .status-bars {
+            display: flex;
+            justify-content: center;
+        }
+        .bar {
+            width: 20px;
+            height: 40px;
+            margin: 0 5px;
+            background-color: green; /* Alive players */
+            border: 1px solid #333;
+        }
+        .bar.dead {
+            background-color: red; /* Dead players */
+        }
     </style>
-  </head>
-  <body>
-    <div class="team-status" id="teamName">RE ESPORTS</div>
-    <div class="bars-container">
-      <div id="bar1" class="bar"></div>
-      <div id="bar2" class="bar"></div>
-      <div id="bar3" class="bar"></div>
-      <div id="bar4" class="bar"></div>
+</head>
+<body>
+    <div class="team-container">
+        <div class="team-name">RE ESPORTS</div>
+        <div class="status-bars" id="status-bars">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
     </div>
-  </body>
+    <script>
+        // Google Sheets Integration
+        async function updateBars() {
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/YOUR-SHEET-ID/gviz/tq?tq=SELECT+A';
+            const response = await fetch(sheetUrl);
+            const text = await response.text();
+            const data = JSON.parse(text.substring(47).slice(0, -2));
+            const rows = data.table.rows;
+
+            // Assuming 1 row of data with 4 player statuses (1 = alive, 0 = dead)
+            const statuses = rows[0].c.map(cell => cell.v);
+            const bars = document.querySelectorAll('.bar');
+
+            bars.forEach((bar, index) => {
+                if (statuses[index] === 0) {
+                    bar.classList.add('dead');
+                } else {
+                    bar.classList.remove('dead');
+                }
+            });
+        }
+
+        // Update every 5 seconds
+        setInterval(updateBars, 5000);
+        updateBars();
+    </script>
+</body>
 </html>
